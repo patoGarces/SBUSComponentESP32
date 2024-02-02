@@ -1,5 +1,5 @@
-#ifndef __SBUS_RECEIVER_H__
-#define __SBUS_RECEIVER_H__
+#ifndef __SBUS_COMMS_H__
+#define __SBUS_COMMS_H__
 
 #include "stdio.h"
 

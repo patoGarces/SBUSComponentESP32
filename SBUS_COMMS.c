@@ -1,11 +1,11 @@
 #include <stdio.h>
-#include "include/SBUS_RECEIVER.h"
+#include "include/SBUS_COMMS.h"
 #include "driver/uart.h"
 #include "string.h"
 #include "esp_log.h"
 #include "freertos/queue.h"
 
-#define TAG "SBUS_RECEIVER"
+#define TAG "SBUS_COMMS"
 
 const int rxPin = 16;
 const int txPin = 17;
