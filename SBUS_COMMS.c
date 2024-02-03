@@ -18,14 +18,14 @@ uint8_t rawToPercent(uint16_t value){
 }
 
 int8_t rawToSwith(uint16_t value){
-    if(value > (SN_POS_1_VALUE - 5) && value < (SN_POS_1_VALUE + 5)){
-        return SN_POS_1;
+    if(value > (SW_POS_1_VALUE - 5) && value < (SW_POS_1_VALUE + 5)){
+        return SW_POS_1;
     }
-    else if(value > (SN_POS_2_VALUE - 5) && value < (SN_POS_2_VALUE + 5)){
-        return SN_POS_2;
+    else if(value > (SW_POS_2_VALUE - 5) && value < (SW_POS_2_VALUE + 5)){
+        return SW_POS_2;
     }
-    else if(value > (SN_POS_3_VALUE - 5) && value < (SN_POS_3_VALUE + 5)){
-        return SN_POS_3;
+    else if(value > (SW_POS_3_VALUE - 5) && value < (SW_POS_3_VALUE + 5)){
+        return SW_POS_3;
     }
     return -1;
 }
@@ -36,7 +36,7 @@ void receiveTask(void *pvParameters ){
     channels_control_t newControl;
     int16_t channels[17];
 
-    queueNewSBUS = xQueueCreate(1,sizeof(newControl));
+    queueNewSBUS = xQueueCreate(1,sizeof(channels_control_t));
 
     while(1){      
         uart_get_buffered_data_len(uartPort, (size_t*)&length);          // obtengo datos para leer
@@ -89,18 +89,6 @@ void receiveTask(void *pvParameters ){
     }
 }
 
-void testReceiveQueue(){
-
-    channels_control_t newControlMessage;
-    while(true){
-
-        if( xQueueReceive(queueNewSBUS,&newControlMessage,0)){
-            printf("throttle: %d,aileron: %d,elevator: %d,rudder: %d,p1: %d,s1: %d,s2: %d\n",newControlMessage.throttle,newControlMessage.aileron,newControlMessage.elevator,newControlMessage.rudder,newControlMessage.p1,newControlMessage.s1,newControlMessage.s2);
-        }
-        vTaskDelay(pdMS_TO_TICKS(10));
-    }
-}
-
 void sbusInit(void){
 
     /*configuro uart*/
@@ -111,7 +99,7 @@ void sbusInit(void){
         .parity = UART_PARITY_EVEN,
         .rx_flow_ctrl_thresh = 112,
         .stop_bits = UART_STOP_BITS_2,
-        .source_clk = UART_SCLK_DEFAULT,//UART_SCLK_APB,//UART_SCLK_REF_TICK,
+        .source_clk = UART_SCLK_DEFAULT,
 
     };
     uart_param_config(uartPort,&uart_config);
@@ -126,7 +114,5 @@ void sbusInit(void){
     // Install UART driver using an event queue here
     uart_driver_install(uartPort, uart_buffer_size, uart_buffer_size, 10, &uart_queue, 0);
 
-    xTaskCreate(&receiveTask,"tarea recepcion", 4096, NULL, 3 , NULL);
-
-    xTaskCreate(&testReceiveQueue,"tarea recepcion", 4096, NULL, 3 , NULL);
+    xTaskCreate(&receiveTask,"tarea recepcion sbus", 4096, NULL, 3 , NULL);
 }

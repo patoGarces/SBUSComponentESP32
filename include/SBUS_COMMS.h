@@ -14,14 +14,14 @@
 #define CHANNEL_MIN         364    
 #define CHANNEL_MAX         1684    
 
-#define SN_POS_1_VALUE      1541    
-#define SN_POS_2_VALUE      1024   
-#define SN_POS_3_VALUE      511     
+#define SW_POS_1_VALUE      1541    
+#define SW_POS_2_VALUE      1024   
+#define SW_POS_3_VALUE      511     
 
 enum{
-    SN_POS_1,
-    SN_POS_2,
-    SN_POS_3
+    SW_POS_1,
+    SW_POS_2,
+    SW_POS_3
 };
 
 typedef struct{
