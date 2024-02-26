@@ -35,6 +35,6 @@ typedef struct{
     uint8_t err;
 }channels_control_t;
 
-void sbusInit(void);
+void sbusInit(uint8_t _uartPort,uint8_t txPin,uint8_t rxPin);
 
 #endif

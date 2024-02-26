@@ -7,9 +7,7 @@
 
 #define TAG "SBUS_COMMS"
 
-const int rxPin = 16;
-const int txPin = 17;
-const int uartPort= UART_NUM_2;
+static uint8_t uartPort;
 
 QueueHandle_t queueNewSBUS;
 
@@ -30,7 +28,7 @@ int8_t rawToSwith(uint16_t value){
     return -1;
 }
 
-void receiveTask(void *pvParameters ){
+static void receiveTask(void *pvParameters ){
 
     uint8_t data[24],length = 0;
     channels_control_t newControl;
@@ -89,9 +87,9 @@ void receiveTask(void *pvParameters ){
     }
 }
 
-void sbusInit(void){
+void sbusInit(uint8_t _uartPort,uint8_t _txPin,uint8_t _rxPin){
 
-    /*configuro uart*/
+    uartPort = _uartPort;
     uart_config_t uart_config={
         .baud_rate = 100000,
         .data_bits = UART_DATA_8_BITS,
@@ -103,16 +101,11 @@ void sbusInit(void){
 
     };
     uart_param_config(uartPort,&uart_config);
-
-    /* configuro pines a utilizar por el uart*/
-    uart_set_pin(uartPort,txPin,rxPin,-1,-1);
-
+    uart_set_pin(uartPort,_txPin,_rxPin,-1,-1);
     uart_set_line_inverse(uartPort,UART_SIGNAL_RXD_INV);
 
     const int uart_buffer_size = (1024 * 2);
     QueueHandle_t uart_queue;
-    // Install UART driver using an event queue here
     uart_driver_install(uartPort, uart_buffer_size, uart_buffer_size, 10, &uart_queue, 0);
-
-    xTaskCreate(&receiveTask,"tarea recepcion sbus", 4096, NULL, 3 , NULL);
+    xTaskCreate(&receiveTask,"read sbus task", 4096, NULL, 3 , NULL);
 }
