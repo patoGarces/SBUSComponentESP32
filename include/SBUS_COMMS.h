@@ -3,10 +3,11 @@
 
 #include "stdio.h"
 
-#define THROTTLE_CHANNEL    2
 #define AILERON_CHANNEL     0
-#define RUDDER_CHANNEL      3
 #define ELEVATOR_CHANNEL    1
+#define THROTTLE_CHANNEL    2
+#define RUDDER_CHANNEL      3
+
 #define P1_CHANNEL          4
 #define S1_CHANNEL          5
 #define S2_CHANNEL          6
@@ -17,6 +18,8 @@
 #define SW_POS_1_VALUE      1541    
 #define SW_POS_2_VALUE      1024   
 #define SW_POS_3_VALUE      511     
+
+#define ERR_CONN_LOST       0xff
 
 enum{
     SW_POS_1,

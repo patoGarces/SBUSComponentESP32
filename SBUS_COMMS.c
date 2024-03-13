@@ -8,7 +8,6 @@
 #define TAG "SBUS_COMMS"
 
 static uint8_t uartPort;
-
 QueueHandle_t queueNewSBUS;
 
 uint8_t rawToPercent(uint16_t value){
@@ -28,12 +27,11 @@ int8_t rawToSwith(uint16_t value){
     return -1;
 }
 
-static void receiveTask(void *pvParameters ){
+static void receiveTask(void *pvParameters){
 
-    uint8_t data[24],length = 0;
+    uint8_t data[24],length = 0,lostPacketsCont = 0;
     channels_control_t newControl;
     int16_t channels[17];
-
     queueNewSBUS = xQueueCreate(1,sizeof(channels_control_t));
 
     while(1){      
@@ -43,9 +41,7 @@ static void receiveTask(void *pvParameters ){
             length = uart_read_bytes(uartPort,data,length,0);
 
             // esp_log_buffer_hex(TAG, &data, length);
-
             if(data[0] == 0x0F && length == 25 && data[length] == 0x00){
-
                 channels[0]  = (uint16_t) ((data[1] | data[2] <<8) & 0x07FF);
                 channels[1]  = ((data[2]>>3 |data[3]<<5)  & 0x07FF);
                 channels[2]  = ((data[3]>>6 |data[4]<<2 |data[5]<<10)  & 0x07FF);
@@ -65,7 +61,6 @@ static void receiveTask(void *pvParameters ){
                 channels[16] = ((data[23]));
 
                 // printf("1: %d,2: %d,3: %d,4: %d,5: %d,6: %d,7: %d\n",rawToPercent(channels[0]),rawToPercent(channels[1]),rawToPercent(channels[2]),rawToPercent(channels[3]),rawToPercent(channels[4]),rawToSwith(channels[5]),rawToSwith(channels[6]));
-
                 newControl.throttle = rawToPercent(channels[THROTTLE_CHANNEL]);
                 newControl.aileron = rawToPercent(channels[AILERON_CHANNEL]);
                 newControl.rudder = rawToPercent(channels[RUDDER_CHANNEL]);
@@ -74,17 +69,22 @@ static void receiveTask(void *pvParameters ){
                 newControl.s1 = rawToSwith(channels[S1_CHANNEL]);
                 newControl.s2 = rawToSwith(channels[S2_CHANNEL]);
                 newControl.err = 0;
-
+                lostPacketsCont = 0;
                 xQueueSend(queueNewSBUS,&newControl,0);
-            
             }
             else{
                 ESP_LOGE(TAG,"RESYNC");
                 uart_flush(uartPort);
             }
         }
+        lostPacketsCont++;
+        if (lostPacketsCont > 10) {
+            newControl.err = ERR_CONN_LOST;
+            xQueueSend(queueNewSBUS,&newControl,0);
+        }
         vTaskDelay(pdMS_TO_TICKS(14));
     }
+    vTaskDelete(NULL);
 }
 
 void sbusInit(uint8_t _uartPort,uint8_t _txPin,uint8_t _rxPin){
